@@ -27,6 +27,14 @@ def listblogs(service):
         print "%s: %s" % (blog.GetSelfLink().href.split('/')[-1],
             blog.title.text)
 
+def listposts(service, blogid):
+    feed = service.Get('/feeds/' + blogid + '/posts/default')
+    for post in feed.entry:
+        print post.GetEditLink().href.split('/')[-1], post.title.text, "[DRAFT]" if is_draft(post) else ""
+
+def is_draft(post):
+    return post.control and post.control.draft and post.control.draft.text == 'yes'
+
 def read_blogpost(filename, rawhtml, rawhtmltitle):
     if not rawhtml:
         parts = html_parts(open(filename, 'rb').read().decode('utf8'))
@@ -37,7 +45,7 @@ def read_blogpost(filename, rawhtml, rawhtmltitle):
         content = open(filename, 'rb').read().decode('utf8')
     return title, content
 
-if __name__ == '__main__':
+def parse_command_line():
     from optparse import OptionParser
 
     parser = OptionParser()
@@ -47,12 +55,22 @@ if __name__ == '__main__':
     parser.add_option("--rawhtml", action="store_true", default=False)
     parser.add_option("--title", help="Only used with --rawhtml")
     parser.add_option("--listblogs", action="store_true", default=False)
+    parser.add_option("--listposts", action="store_true", default=False)
 
     opts, args = parser.parse_args()
+    if not opts.username:
+        opts.username = raw_input("Username: ")
     if not opts.password:
         opts.password = getpass.getpass()
+    return opts, args
+
+if __name__ == '__main__':
+    opts, args = parse_command_line()
+
     if opts.listblogs:
         listblogs(login(opts.username, opts.password))
+    elif opts.listposts:
+        listposts(login(opts.username, opts.password), opts.blogid)
     else:
         if not args: parser.error("Specify file name")
 
