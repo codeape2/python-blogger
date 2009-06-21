@@ -1,10 +1,5 @@
-import atom
-from docutils.examples import html_parts
-import gdata
-import gdata.service
-import getpass
-
 def login(username, password):
+    import gdata.service
     service = gdata.service.GDataService(username, password)
     service.service = 'blogger'
     service.server = 'www.blogger.com'
@@ -12,6 +7,8 @@ def login(username, password):
     return service
 
 def create_entry(title, content, draft=False):
+    import atom
+    import gdata
     entry = gdata.GDataEntry()
     entry.title = atom.Title(title_type='text', text=title)
     entry.content = atom.Content(content_type='html', text=content.encode('utf8'))
@@ -36,6 +33,8 @@ def is_draft(post):
     return post.control and post.control.draft and post.control.draft.text == 'yes'
 
 def read_blogpost(filename, rawhtml, rawhtmltitle):
+    from docutils.examples import html_parts
+
     if not rawhtml:
         parts = html_parts(open(filename, 'rb').read().decode('utf8'))
         title = parts['title']
@@ -46,12 +45,13 @@ def read_blogpost(filename, rawhtml, rawhtmltitle):
     return title, content
 
 def parse_command_line():
+    import getpass
     from optparse import OptionParser
 
     parser = OptionParser()
     parser.add_option("--username")
     parser.add_option("--password")
-    parser.add_option("--blogid")
+    parser.add_option("--blog")
     parser.add_option("--rawhtml", action="store_true", default=False)
     parser.add_option("--title", help="Only used with --rawhtml")
     parser.add_option("--listblogs", action="store_true", default=False)
@@ -70,7 +70,7 @@ if __name__ == '__main__':
     if opts.listblogs:
         listblogs(login(opts.username, opts.password))
     elif opts.listposts:
-        listposts(login(opts.username, opts.password), opts.blogid)
+        listposts(login(opts.username, opts.password), opts.blog)
     else:
         if not args: parser.error("Specify file name")
 
