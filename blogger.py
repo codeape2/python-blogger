@@ -56,7 +56,7 @@ USAGE="""
 1. python blogger.py --listblogs --username someone@somewhere.com
 2. python blogger.py --listposts --username someone@somewhere.com --blog blogid
 3. python blogger.py --username someone@somewhere.com --blog blogid filename.rst
-4. python blogger.py --username someone@somewhere.com --blog blogid --post postid filename.rst
+4. python blogger.py --username someone@somewhere.com --blog blogid --change postid filename.rst
 
 1. List blogs for user
 2. List posts on blog
