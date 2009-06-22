@@ -1,3 +1,5 @@
+import rstdirective
+
 def login(username, password):
     import gdata.service
     service = gdata.service.GDataService(username, password)
@@ -6,16 +8,19 @@ def login(username, password):
     service.ProgrammaticLogin()
     return service
 
+import atom
 def create_entry(title, content, draft=False):
-    import atom
     import gdata
-    entry = gdata.GDataEntry()
-    entry.title = atom.Title(title_type='text', text=title)
-    entry.content = atom.Content(content_type='html', text=content.encode('utf8'))
+    entry = update_entry(gdata.GDataEntry(), title, content)
     if draft:
         control = atom.Control()
         control.draft = atom.Draft(text='yes')
         entry.control = control
+    return entry
+
+def update_entry(entry, title, content):
+    entry.title = atom.Title(title_type='text', text=title)
+    entry.content = atom.Content(content_type='html', text=content.encode('utf8'))
     return entry
 
 def listblogs(service):
@@ -32,9 +37,8 @@ def listposts(service, blogid):
 def is_draft(post):
     return post.control and post.control.draft and post.control.draft.text == 'yes'
 
+from docutils.examples import html_parts
 def read_blogpost(filename, rawhtml, rawhtmltitle):
-    from docutils.examples import html_parts
-
     if not rawhtml:
         parts = html_parts(open(filename, 'rb').read().decode('utf8'))
         title = parts['title']
@@ -44,28 +48,47 @@ def read_blogpost(filename, rawhtml, rawhtmltitle):
         content = open(filename, 'rb').read().decode('utf8')
     return title, content
 
+def dump_blogpost(filename):
+    parts = html_parts(open(filename, 'rb').read().decode('utf8'))
+    print parts['whole']
+
+USAGE="""
+1. python blogger.py --listblogs --username someone@somewhere.com
+2. python blogger.py --listposts --username someone@somewhere.com --blog blogid
+3. python blogger.py --username someone@somewhere.com --blog blogid filename.rst
+4. python blogger.py --username someone@somewhere.com --blog blogid --post postid filename.rst
+
+1. List blogs for user
+2. List posts on blog
+3. Publish blog post
+4. Update an existing post
+"""
+
 def parse_command_line():
     import getpass
     from optparse import OptionParser
 
-    parser = OptionParser()
+    parser = OptionParser(usage=USAGE)
     parser.add_option("--username")
     parser.add_option("--password")
-    parser.add_option("--blog")
+    parser.add_option("--blog", metavar="BLOGID")
     parser.add_option("--rawhtml", action="store_true", default=False)
     parser.add_option("--title", help="Only used with --rawhtml")
     parser.add_option("--listblogs", action="store_true", default=False)
     parser.add_option("--listposts", action="store_true", default=False)
+    parser.add_option("--change", metavar="POSTID")
+    parser.add_option("--dump", action="store_true", default=False, 
+        help="Write the HTML output to stdout instead of uploading to blogger")
 
     opts, args = parser.parse_args()
-    if not opts.username:
+    if not opts.username and not opts.dump:
         opts.username = raw_input("Username: ")
-    if not opts.password:
+    if not opts.password and not opts.dump:
         opts.password = getpass.getpass()
-    return opts, args
+    return parser, opts, args
 
 if __name__ == '__main__':
-    opts, args = parse_command_line()
+    parser, opts, args = parse_command_line()
 
     if opts.listblogs:
         listblogs(login(opts.username, opts.password))
@@ -74,7 +97,16 @@ if __name__ == '__main__':
     else:
         if not args: parser.error("Specify file name")
 
-        title, content = read_blogpost(args[0], opts.rawhtml, opts.title)
-        login(opts.username, opts.password).Post(
-            create_entry(title, content),
-            '/feeds/' + opts.blogid + '/posts/default')
+        if opts.dump:
+            dump_blogpost(args[0])
+        else:
+            title, content = read_blogpost(args[0], opts.rawhtml, opts.title)
+            service = login(opts.username, opts.password)
+            if opts.change:
+                entry = service.Get('/feeds/%s/posts/default/%s' % (opts.blog, opts.change))
+                update_entry(entry, title, content)
+                service.Put(entry, entry.GetEditLink().href)
+            else:
+                service.Post(
+                    create_entry(title, content),
+                    '/feeds/' + opts.blogid + '/posts/default')

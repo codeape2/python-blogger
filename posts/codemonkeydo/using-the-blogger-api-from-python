@@ -27,18 +27,20 @@ Example use::
 
     # then create a new blog post
     (vanilla)[~/misc/blogger]
-    $ python blogger.py --username my.email@gmail.com --blogid nnnnnnnnnnnnnnnnnnn post1.rst 
+    $ python blogger.py --username my.email@gmail.com --blog nnnnnnnnnnnnnnnnnnn post1.rst 
     Password: 
 
-``blogger.py`` source code::
+    $ python blogger.py --help
+    ...
 
-    import atom
-    from docutils.examples import html_parts
-    import gdata
-    import gdata.service
-    import getpass
+``blogger.py`` source code (`on github <http://github.com/codeape2/python-blogger/tree/master/blogger.py>`_):
+
+.. sourcecode:: python
+
+    import rstdirective
 
     def login(username, password):
+        import gdata.service
         service = gdata.service.GDataService(username, password)
         service.service = 'blogger'
         service.server = 'www.blogger.com'
@@ -46,6 +48,8 @@ Example use::
         return service
 
     def create_entry(title, content, draft=False):
+        import atom
+        import gdata
         entry = gdata.GDataEntry()
         entry.title = atom.Title(title_type='text', text=title)
         entry.content = atom.Content(content_type='html', text=content.encode('utf8'))
@@ -61,36 +65,15 @@ Example use::
             print "%s: %s" % (blog.GetSelfLink().href.split('/')[-1],
                 blog.title.text)
 
-    def read_blogpost(filename, rawhtml, rawhtmltitle):
-        if not rawhtml:
-            parts = html_parts(open(filename, 'rb').read().decode('utf8'))
-            title = parts['title']
-            content = parts['body']
-        else:
-            title = opts.title
-            content = open(filename, 'rb').read().decode('utf8')
-        return title, content
+    def listposts(service, blogid):
+        feed = service.Get('/feeds/' + blogid + '/posts/default')
+        for post in feed.entry:
+            print post.GetEditLink().href.split('/')[-1], post.title.text, "[DRAFT]" if is_draft(post) else ""
 
-    if __name__ == '__main__':
-        from optparse import OptionParser
+    # ... see full source code on github: http://github.com/codeape2/python-blogger/tree/master/blogger.py
 
-        parser = OptionParser()
-        parser.add_option("--username")
-        parser.add_option("--password")
-        parser.add_option("--blogid")
-        parser.add_option("--rawhtml", action="store_true", default=False)
-        parser.add_option("--title", help="Only used with --rawhtml")
-        parser.add_option("--listblogs", action="store_true", default=False)
+If you are not familiar with the reStructuredText format, have a look at 
+`this example <http://github.com/codeape2/python-blogger/tree/master/posts/codemonkeydo/using-the-blogger-api-from-python>`_,
+the rst source for this post.
 
-        opts, args = parser.parse_args()
-        if not opts.password:
-            opts.password = getpass.getpass()
-        if opts.listblogs:
-            listblogs(login(opts.username, opts.password))
-        else:
-            if not args: parser.error("Specify file name")
-
-            title, content = read_blogpost(args[0], opts.rawhtml, opts.title)
-            login(opts.username, opts.password).Post(
-                create_entry(title, content),
-                '/feeds/' + opts.blogid + '/posts/default')
+You can download the entire source code from `github <http://github.com/codeape2/python-blogger>`_.
