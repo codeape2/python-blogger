@@ -17,7 +17,9 @@ application (``blogger.py``) that takes a rst file, converts it to HTML and publ
 Using this approach, I can edit blog posts in `a my editor of choice
 <http://www.vim.org>`_, using an easy-to-read plaintext markup syntax.
 
-Example use::
+Example use:
+
+.. sourcecode:: bash
 
     # first, get the blog id
     (vanilla)[~/misc/blogger]
