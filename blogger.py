@@ -24,9 +24,13 @@ def update_entry(entry, title, content):
     return entry
 
 def listblogs(service):
+    for blogid, title in getblogs(service):
+        print "%s: %s" % (blogid, title)
+
+def getblogs(service):
     feed = service.Get('/feeds/default/blogs')
     for blog in feed.entry:
-        print "%s: %s" % (blog.GetSelfLink().href.split('/')[-1],
+        yield (blog.GetSelfLink().href.split('/')[-1],
             blog.title.text)
 
 def listposts(service, blogid):
