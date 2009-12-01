@@ -1,0 +1,74 @@
+.. vim:filetype=rst textwidth=78
+
+CWF: Codemonkey's Web Framework
+===============================
+
+In a `Stack Overflow answer`_ (to the question: 
+"`I know C#, will I be more productive in Python <http://stackoverflow.com/questions/819056/i-know-c-will-i-be-more-productive-with-python>`_"),
+I half-jokingly wrote: "You can create a WSGI-based Python web framework in
+fewer lines of code than your typical .NET web.config file".
+
+So I decided to give it a try. Of course, the world is already full of Python
+web frameworks (Django, Pylons, TurboGears, web.py, etc.), so there is no real
+need for another one. I have used both Django and TurboGears to create
+applications, and am pretty pleased with both frameworks (here is 
+my `mini-review`_ of the two).
+
+I have `dabbled with the thought`_ earlier, and I made my first attempt when I
+had the chance to create a greenfield prototype web application. For that
+particular application, I decided I would not use a web framework. Rather, I would
+create a WSGI application from scratch. I used the `WebOb`_ Request/Response
+objects, and also some `Paste`_ components (`an overview of Paste`_). This was
+a rewarding experience, one that I learned some lessons from.
+
+I elected to do the same for a couple of internal web apps I created next.
+Only this time, I tried the `Werkzeug`_ library instead of Paste. I really
+like Werkzeug (`and so does Alex Martelli`_), especially its routing
+framework and Request/Response wrappers.
+
+Out of all this (and **first and foremost as a learning experience for myself**),
+the beginnings of a web framework has emerged. You can check it out on github,
+and below is a short screencast that shows what developing with CWS is like.
+
+CWF's main features:
+
+* No database component, use whatever data access method you need, if you need
+  it.
+* Uses `Jinja2`_ for templating.
+* Uses Werkzeug's `routing system`_, request and response objects.
+* Standardizes the view method signature to:
+
+::
+  
+  def viewmethod(request, *args, **kwargs):
+      # all view methods must return a werkzeug Response object
+
+.. raw:: html
+
+   <object width="640" height="498"> <param name="movie" value="http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/bootstrap.swf"></param> <param name="quality" value="high"></param> <param name="bgcolor" value="#FFFFFF"></param> <param name="flashVars" value="thumb=http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/FirstFrame.jpg&containerwidth=640&containerheight=498&content=http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/101-640x480.swf"></param> <param name="allowFullScreen" value="true"></param> <param name="scale" value="showall"></param> <param name="allowScriptAccess" value="always"></param> <param name="base" value="http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/"></param>  <embed src="http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/bootstrap.swf" quality="high" bgcolor="#FFFFFF" width="640" height="498" type="application/x-shockwave-flash" allowScriptAccess="always" flashVars="thumb=http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/FirstFrame.jpg&containerwidth=640&containerheight=498&content=http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/101-640x480.swf" allowFullScreen="true" base="http://content.screencast.com/users/Featured/folders/Featured/media/3b3354d0-9a8b-4fcb-bce9-a4a27507c78e/" scale="showall"></embed> </object>
+
+Some closing thoughts:
+
+* CWF's feel is closer to Django than TurboGears. I find that I prefer URL
+  mapping to  `object dispatch`_
+* Had I approached WebOb/Paste in the same way I approached Werkzeug (reading
+  a lot docs, doing the tutorials, reading a bit of source code etc.), there
+  is a good chance that the framework would have been based on WebOb/Paste.
+  That being said, there are parts where prefer Werkzeug over WebOb/Paste (but I
+  am still a `huge Ian Bicking fan`_).
+* I am a reformed .NET developer. Look out for a later blog post where I
+  attempt to port the `NerdDinner`_ reference ASP.NET MVC application to Codemonkey's Web Framework.
+
+.. _Stack Overflow answer: http://stackoverflow.com/questions/819056/i-know-c-will-i-be-more-productive-with-python/824064#824064
+.. _mini-review: http://stackoverflow.com/questions/1118163/turbogears-2-vs-django-any-advice-on-choosing-replacement-for-turbogears-1/1118670#1118670
+.. _dabbled with the thought: http://stackoverflow.com/questions/43709/pros-and-cons-of-different-approaches-to-web-programming-in-python/43753#43753
+.. _WebOb: http://pythonpaste.org/webob/
+.. _Paste: http://pythonpaste.org/modindex.html
+.. _an overview of Paste: http://stackoverflow.com/questions/1802282/what-is-paste-script/1802440#1802440
+.. _Werkzeug: http://werkzeug.pocoo.org/
+.. _and so does Alex Martelli: http://stackoverflow.com/questions/1515324/history-of-djangos-popularity/1515370#1515370
+.. _huge Ian Bicking fan: http://stackoverflow.com/questions/171785/how-do-you-organize-python-modules/173715#173715
+.. _object dispatch: http://percious.com/blog/archives/33
+.. _Jinja2: http://jinja.pocoo.org/2/
+.. _routing system: http://werkzeug.pocoo.org/documentation/dev/routing.html
+.. _NerdDinner: http://nerddinner.codeplex.com/
