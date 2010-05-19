@@ -1,0 +1,57 @@
+============================
+A git workflow using bundles
+============================
+
+Disclaimer: I am a git n00b, so there are probably better ways to do this.
+
+Below is the git workflow I use for cases when I do development on two
+boxes (named Local and Remote below), but there is no way to clone/fetch/pull directly.
+
+(Local) Create the initial bundle and create a tag::
+
+    $ git bundle create toremote.bundle HEAD
+    $ git tag toremote
+
+Transfer the bundle file to the remote computer.
+
+(Remote) Initialize an empty repository, and pull from the bundle file::
+
+    $ mkdir repo
+    $ cd repo
+    $ git init
+    $ git pull /tmp/toremote.bundle
+
+(Remote) Create a tag::
+
+    $ git tag fromlocal
+
+You now do some bugfixing or development on the remote computer. Use git as
+normal and commit your changes.
+
+(Remote) Then create a bundle containing your changes, and create a tag::
+
+    $ git bundle create tolocal.bundle fromlocal..HEAD
+    $ git tag -f tolocal
+
+Transfer the bundle file to the local computer.
+
+(Local) Pull from the bundle to update the local repository::
+
+    $ git pull tolocal.bundle
+    $ git tag -f fromremote
+
+You then do some hacking on the local computer. Use git as normal and
+commit your changes.
+
+(Local) Then create a bundle containing your changes, and create a tag::
+
+    $ git bundle create toremote.bundle toremote..HEAD
+    $ git tag -f toremote
+
+Transfer the bundle file to the remote computer.
+
+(Remote) Pull from the bundle and create a tag::
+
+    $ git pull /path/to/toremote.bundle
+    $ git tag -f fromlocal
+

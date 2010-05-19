@@ -113,4 +113,4 @@ if __name__ == '__main__':
             else:
                 service.Post(
                     create_entry(title, content),
-                    '/feeds/' + opts.blogid + '/posts/default')
+                    '/feeds/' + opts.blog + '/posts/default')
